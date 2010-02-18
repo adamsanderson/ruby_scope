@@ -33,9 +33,6 @@ class RubyScope
     exit 1    
   end
   
-  def self.silly
-  end
-  
   def parse_options(args)    
     opts = OptionParser.new do |opts|    
       opts.banner = "Usage: ruby_scope [options] path"
@@ -53,6 +50,10 @@ class RubyScope
       
       opts.on("-c", "--call NAME", "Find method calls of NAME") do |name|
         add_query("s(:call, _, :#{name}, _)")
+      end
+      
+      opts.on("-C", "--class NAME", "Find definition of NAME") do |name|
+        add_query("s(:class, :#{name}, _, _)")
       end
       
       opts.on_tail("-h", "--help", "Show this message") do
