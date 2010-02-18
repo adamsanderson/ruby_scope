@@ -55,20 +55,13 @@ class RubyScope
       end
       
       opts.on("-v", "--variable NAME", "Find references to variable NAME") do |name|
-        if name[0..0] == '@'
-          add_query("s(:ivar, :#{name})")
-        else
-          add_query("s(:lvar, :#{name})")
-        end
+        tag = instance_variable?(name) ? 'ivar' : 'lvar'
+        add_query("s(:#{tag}, :#{name})")
       end
       
-      # Note, this does not find method arguments which is the other way to introduce a variable into scope
       opts.on("-a" "--assign NAME", "Find assignments to NAME") do |name|
-        if name[0..0] == '@'
-          add_query("s(:iasgn, :#{name}, _)")
-        else
-          add_query("s(:lasgn, :#{name}, _)")
-        end
+        tag = instance_variable?(name) ? 'iasgn' : 'lasgn'
+        add_query("s(:#{tag}, :#{name}, _) | (t(:args) & SexpPath::Matcher::Block.new{|s| s[1..-1].any?{|a| a == :#{name}}} )")        
       end
       
       opts.on_tail("-h", "--help", "Show this message") do
@@ -114,6 +107,12 @@ class RubyScope
       end      
     end
   end
+  
+  private
+  def instance_variable?(name)
+    name[0..0] == '@'
+  end
+  
 end
 
 rs = RubyScope.new
