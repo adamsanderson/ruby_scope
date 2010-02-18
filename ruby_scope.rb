@@ -7,13 +7,11 @@ require 'optparse'
 # Example program, this will scan a file for anything
 # matching the Sexp passed in.
 class RubyScope
-  def initialize(args)
+  def initialize
     @query = nil
     @verbose = false
     @unifier = Unifier.new
     @numbering = LineNumberingProcessor.new
-    
-    parse_options(args)
   end
   
   def add_query(pattern)
@@ -33,7 +31,7 @@ class RubyScope
     exit 1    
   end
   
-  def parse_options(args)    
+  def parse_options!(args)    
     opts = OptionParser.new do |opts|    
       opts.banner = "Usage: ruby_scope [options] path"
 
@@ -56,6 +54,23 @@ class RubyScope
         add_query("s(:class, :#{name}, _, _)")
       end
       
+      opts.on("-v", "--variable NAME", "Find references to variable NAME") do |name|
+        if name[0..0] == '@'
+          add_query("s(:ivar, :#{name})")
+        else
+          add_query("s(:lvar, :#{name})")
+        end
+      end
+      
+      # Note, this does not find method arguments which is the other way to introduce a variable into scope
+      opts.on("-a" "--assign NAME", "Find assignments to NAME") do |name|
+        if name[0..0] == '@'
+          add_query("s(:iasgn, :#{name}, _)")
+        else
+          add_query("s(:lasgn, :#{name}, _)")
+        end
+      end
+      
       opts.on_tail("-h", "--help", "Show this message") do
         puts opts
         exit
@@ -70,7 +85,9 @@ class RubyScope
     end
   end
   
-  def run
+  def run(args)
+    parse_options!(args)
+    
     # For each path the user defined, search for the SexpPath pattern
     @paths.each do |path|  
       # Parse it with ParseTree, and append line numbers
@@ -99,5 +116,5 @@ class RubyScope
   end
 end
 
-rs = RubyScope.new(ARGV)
-rs.run
+rs = RubyScope.new
+rs.run(ARGV)
