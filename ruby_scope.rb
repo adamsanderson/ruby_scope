@@ -8,7 +8,7 @@ require 'optparse'
 # matching the Sexp passed in.
 class RubyScope
   def initialize(args)
-    @queries = []
+    @query = nil
     @verbose = false
     @unifier = Unifier.new
     @numbering = LineNumberingProcessor.new
@@ -19,7 +19,12 @@ class RubyScope
   def add_query(pattern)
     # Generate the pattern, we use a little instance_eval trickery here. 
     sexp = SexpPath::SexpQueryBuilder.instance_eval(pattern)
-    @queries << sexp
+    if @query 
+      @query = @query | sexp
+    else
+      @query = sexp
+    end
+    @query
   rescue Exception=>ex
     puts "Invalid Pattern: '#{pattern}'"
     puts "Trace:"
@@ -27,7 +32,10 @@ class RubyScope
     puts ex.backtrace
     exit 1    
   end
-    
+  
+  def self.silly
+  end
+  
   def parse_options(args)    
     opts = OptionParser.new do |opts|    
       opts.banner = "Usage: ruby_scope [options] path"
@@ -41,6 +49,10 @@ class RubyScope
       
       opts.on("-D", "--class-def NAME", "Find the definition of class method NAME") do |name|
         add_query("s(:defs, _, :#{name}, _, _)")
+      end
+      
+      opts.on("-c", "--call NAME", "Find method calls of NAME") do |name|
+        add_query("s(:call, _, :#{name}, _)")
       end
       
       opts.on_tail("-h", "--help", "Show this message") do
@@ -72,18 +84,16 @@ class RubyScope
       
       found = false
       
-      @queries.each do |pattern|
-        # Search it with the given pattern, printing any results
-        sexp.search_each(pattern) do |match|
-          if !found
-            puts path
-            found = true
-          end
-          lines ||= code.split("\n")
-          line_number = match.sexp.line - 1
-          puts "%4i: %s" % [match.sexp.line, lines[line_number]]
+      # Search it with the given pattern, printing any results
+      sexp.search_each(@query) do |match|
+        if !found
+          puts path
+          found = true
         end
-      end
+        lines ||= code.split("\n")
+        line_number = match.sexp.line - 1
+        puts "%4i: %s" % [match.sexp.line, lines[line_number]]
+      end      
     end
   end
 end
