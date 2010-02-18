@@ -60,7 +60,7 @@ class RubyScope
       end
       
       # Finds block arguments, variable assignments, method arguments (in that order)
-      opts.on("-a" "--assign NAME", "Find assignments to NAME") do |name|
+      opts.on("-a", "--assign NAME", "Find assignments to NAME") do |name|
         tag = instance_variable?(name) ? 'iasgn' : 'lasgn'
         add_query("s(:#{tag}, :#{name}) | s(:#{tag}, :#{name}, _) | (t(:args) & SexpPath::Matcher::Block.new{|s| s[1..-1].any?{|a| a == :#{name}}} )")        
       end
