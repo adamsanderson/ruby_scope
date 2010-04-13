@@ -1,17 +1,16 @@
 require 'rubygems'
-require 'parse_tree'
+require 'ruby_parser'
 require 'sexp_path'
 require 'unified_ruby'
 require 'optparse'
 
 # Example program, this will scan a file for anything
 # matching the Sexp passed in.
+
 class RubyScope
   def initialize
     @query = nil
     @verbose = false
-    @unifier = Unifier.new
-    @numbering = LineNumberingProcessor.new
   end
   
   def add_query(pattern)
@@ -65,6 +64,10 @@ class RubyScope
         add_query("s(:#{tag}, :#{name}) | s(:#{tag}, :#{name}, _) | (t(:args) & SexpPath::Matcher::Block.new{|s| s[1..-1].any?{|a| a == :#{name}}} )")        
       end
       
+      opts.on("-R", "Recursively search folders") do
+        @recurse = true
+      end
+      
       opts.on_tail("-h", "--help", "Show this message") do
         puts opts
         exit
@@ -79,21 +82,20 @@ class RubyScope
     end
   end
   
+  def expand_paths(paths)
+    paths.inject([]){|p,v| File.directory?(v) ? p.concat(Dir[File.join(v,'**/*.rb')]) : p << v; p }
+  end
+  
   def run(args)
     parse_options!(args)
+    paths = @recurse ? expand_paths(@paths) : @paths
     
     # For each path the user defined, search for the SexpPath pattern
-    @paths.each do |path|  
+    paths.each do |path|
       # Parse it with ParseTree, and append line numbers
       code = File.read(path)
       lines = nil
-      sexp = Sexp.from_array(ParseTree.new(true).parse_tree_for_string(code, path).first)
-      sexp = @unifier.process(sexp)
-      
-      sexp.path = path
-      sexp.line = 0
-      sexp = @numbering.rewrite(sexp)
-      
+      sexp = RubyParser.new.parse(code, path)      
       found = false
       
       # Search it with the given pattern, printing any results
