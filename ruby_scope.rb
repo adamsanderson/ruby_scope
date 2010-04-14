@@ -117,12 +117,8 @@ class RubyScope
         end      
       rescue StandardError => ex
         debug "Problem processing '#{path}'"
-        if @verbose
-          debug ex.message
-          debug ex.backtrace.map{|line| "  #{line}"}.join("\n")
-        else
-          debug ex.message
-        end
+        debug ex.message.strip
+        debug ex.backtrace.map{|line| "  #{line}"}.join("\n")
       end
     end
   end
@@ -133,8 +129,7 @@ class RubyScope
   end
   
   def debug(msg)
-    STDERR.print(msg);
-    STDERR.print("\n");
+    STDERR.print(msg.to_s.chomp + "\n")
   end
   
 end
