@@ -92,22 +92,31 @@ class RubyScope
     
     # For each path the user defined, search for the SexpPath pattern
     paths.each do |path|
-      # Parse it with ParseTree, and append line numbers
-      code = File.read(path)
-      lines = nil
-      sexp = RubyParser.new.parse(code, path)      
-      found = false
+      begin
+        # Parse it with RubyParser
+        code = File.read(path)
+        lines = nil
+        sexp = RubyParser.new.parse(code, path)      
+        found = false
       
-      # Search it with the given pattern, printing any results
-      sexp.search_each(@query) do |match|
-        if !found
-          puts path
-          found = true
+        # Search it with the given pattern, printing any results
+        sexp.search_each(@query) do |match|
+          if !found
+            puts path
+            found = true
+          end
+          lines ||= code.split("\n")
+          line_number = match.sexp.line - 1
+          puts "%4i: %s" % [match.sexp.line, lines[line_number]]
+        end      
+      rescue Exception => ex
+        STDERR << "Problem processing '#{path}'\n"
+        if @verbose
+          STDERR << ex.inspect + "\n"
+        else
+          STDERR << ex.message + "\n"
         end
-        lines ||= code.split("\n")
-        line_number = match.sexp.line - 1
-        puts "%4i: %s" % [match.sexp.line, lines[line_number]]
-      end      
+      end
     end
   end
   
