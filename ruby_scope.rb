@@ -86,10 +86,6 @@ class RubyScope
     end
   end
   
-  def expand_paths(paths)
-    paths.inject([]){|p,v| File.directory?(v) ? p.concat(Dir[File.join(v,'**/*.rb')]) : p << v; p }
-  end
-  
   def run(args)
     parse_options!(args)
     paths = @recurse ? expand_paths(@paths) : @paths
@@ -104,7 +100,7 @@ class RubyScope
         @code = File.read(path)
         @lines = nil
         next unless sexp = RubyParser.new.parse(@code, @path)
-        
+
         # Search it with the given pattern, printing any results
         sexp.search_each(@query) do |matching_sexp|
           report_match matching_sexp
@@ -133,6 +129,10 @@ class RubyScope
     debug "Problem processing '#{@path}'"
     debug ex.message.strip
     debug ex.backtrace.map{|line| "  #{line}"}.join("\n")
+  end
+  
+  def expand_paths(paths)
+    paths.inject([]){|p,v| File.directory?(v) ? p.concat(Dir[File.join(v,'**/*.rb')]) : p << v; p }
   end
   
   def instance_variable?(name)

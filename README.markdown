@@ -16,7 +16,7 @@ For instance, find all the places `to_i` or `to_f` are called in your secret pro
 
     ruby ruby_scope.rb -c 'to_i' -c 'to_f' ~/SecretProject/**/*.rb
     
-Depends on ParseTree, SexpProcessor, and SexpPath, no gem yet.
+Depends on RubyParser, SexpProcessor, and SexpPath, no gem yet.
 
     Adam Sanderson
     netghost@gmail.com
