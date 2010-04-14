@@ -68,6 +68,10 @@ class RubyScope
         @recurse = true
       end
       
+      opts.on("--verbose", "Verbose output") do |name|
+        @verbose = true
+      end
+      
       opts.on_tail("-h", "--help", "Show this message") do
         puts opts
         exit
@@ -93,6 +97,7 @@ class RubyScope
     # For each path the user defined, search for the SexpPath pattern
     paths.each do |path|
       begin
+        STDERR.print(path+"\n") if @verbose
         # Parse it with RubyParser
         code = File.read(path)
         lines = nil
@@ -109,12 +114,12 @@ class RubyScope
           line_number = match.sexp.line - 1
           puts "%4i: %s" % [match.sexp.line, lines[line_number]]
         end      
-      rescue Exception => ex
-        STDERR << "Problem processing '#{path}'\n"
+      rescue StandardError => ex
+        debug "Problem processing '#{path}'"
         if @verbose
-          STDERR << ex.inspect + "\n"
+          debug ex.inspect 
         else
-          STDERR << ex.message + "\n"
+          debug ex.message
         end
       end
     end
@@ -123,6 +128,11 @@ class RubyScope
   private
   def instance_variable?(name)
     name[0..0] == '@'
+  end
+  
+  def debug(msg)
+    STDERR.print(msg);
+    STDERR.print("\n");
   end
   
 end
