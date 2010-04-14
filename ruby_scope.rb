@@ -97,17 +97,18 @@ class RubyScope
     # For each path the user defined, search for the SexpPath pattern
     paths.each do |path|
       begin
-        STDERR.print(path+"\n") if @verbose
+        puts path if @verbose
+        
         # Parse it with RubyParser
         code = File.read(path)
         lines = nil
-        sexp = RubyParser.new.parse(code, path)      
+        next unless sexp = RubyParser.new.parse(code, path)      
         found = false
-      
+        
         # Search it with the given pattern, printing any results
         sexp.search_each(@query) do |match|
           if !found
-            puts path
+            puts path unless @verbose
             found = true
           end
           lines ||= code.split("\n")
@@ -117,7 +118,8 @@ class RubyScope
       rescue StandardError => ex
         debug "Problem processing '#{path}'"
         if @verbose
-          debug ex.inspect 
+          debug ex.message
+          debug ex.backtrace.map{|line| "  #{line}"}.join("\n")
         else
           debug ex.message
         end
