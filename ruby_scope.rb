@@ -96,34 +96,45 @@ class RubyScope
     
     # For each path the user defined, search for the SexpPath pattern
     paths.each do |path|
+      @path = path
       begin
-        puts path if @verbose
+        report_file path
         
         # Parse it with RubyParser
-        code = File.read(path)
-        lines = nil
-        next unless sexp = RubyParser.new.parse(code, path)      
-        found = false
+        @code = File.read(path)
+        @lines = nil
+        next unless sexp = RubyParser.new.parse(@code, @path)
         
         # Search it with the given pattern, printing any results
-        sexp.search_each(@query) do |match|
-          if !found
-            puts path unless @verbose
-            found = true
-          end
-          lines ||= code.split("\n")
-          line_number = match.sexp.line - 1
-          puts "%4i: %s" % [match.sexp.line, lines[line_number]]
+        sexp.search_each(@query) do |matching_sexp|
+          report_match matching_sexp
         end      
       rescue StandardError => ex
-        debug "Problem processing '#{path}'"
-        debug ex.message.strip
-        debug ex.backtrace.map{|line| "  #{line}"}.join("\n")
+        report_exception ex
       end
     end
   end
   
-  private
+  protected
+  def report_file(path)
+    puts @path if @verbose
+  end
+  
+  def report_match(match)
+    if !@lines
+      puts @path unless @verbose
+      @lines = @code.split("\n")
+    end
+    line_number = match.sexp.line - 1
+    puts "%4i: %s" % [match.sexp.line, @lines[line_number].strip]
+  end
+  
+  def report_exception(ex)
+    debug "Problem processing '#{@path}'"
+    debug ex.message.strip
+    debug ex.backtrace.map{|line| "  #{line}"}.join("\n")
+  end
+  
   def instance_variable?(name)
     name[0..0] == '@'
   end
