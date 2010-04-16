@@ -5,7 +5,6 @@ class RubyScope::Scanner
   def initialize
     @query = nil
     @verbose = false
-    @cache = Hash.new{|h,k| k} # hash that does nothing, and stores nothing
   end
   
   def add_query(pattern)
@@ -31,11 +30,17 @@ class RubyScope::Scanner
       report_file path
       
       # Load the code and parse it with RubyParser
-      @code = File.read(@path)
+      @code = File.read(path)
       @lines = nil
-      sexp = (@cache[@path] ||= RubyParser.new.parse(@code, @path))
       
-      if sexp = RubyParser.new.parse(@code, @path)
+      # If we're caching pull from the cache, otherwise parse the code
+      sexp = @cache[path] if @cache
+      if !sexp
+        sexp = RubyParser.new.parse(@code, @path)
+        @cache[path] = sexp if @cache
+      end
+ 
+      if sexp
         # Search it with the given pattern, printing any results
         sexp.search_each(@query) do |matching_sexp|
           report_match matching_sexp

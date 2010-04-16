@@ -42,7 +42,7 @@ class RubyScope::CLI
       end
       
       opts.on("--no-cache", "Do not use a cache") do
-        @cache_path = false
+        @cache_path = nil
       end
       
       opts.on("--cache PATH", "Use the cache at PATH (defaults to current dir)") do |path|
@@ -58,10 +58,8 @@ class RubyScope::CLI
         exit
       end  
     end
-    
-    @scanner.cache = RubyScope::SexpCache.new(@cache_path) if @cache_path
-    
     opts.parse!(args)
+    
     @paths = args
     
     if @paths.empty?
@@ -70,14 +68,13 @@ class RubyScope::CLI
     end
     
     @paths = expand_paths(@paths) if @recurse
+    @scanner.cache = RubyScope::SexpCache.new(@cache_path) if @cache_path
   end
   
   def run
     @paths.each do |path|
       @scanner.scan path
     end
-    
-    @scanner.cache.save if @cache_path
   end
   
   protected
