@@ -13,6 +13,7 @@ end
 root = File.dirname(__FILE__)+'/ruby_scope/'
 %w[
   scanner
+  sexp_cache
   cli
 ].each do |file|
   require root+file

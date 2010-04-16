@@ -2,6 +2,7 @@ class RubyScope::CLI
   def initialize(args)
     args = args.clone
     @scanner = RubyScope::Scanner.new
+    @cache_path = FileUtils.pwd
     
     opts = OptionParser.new do |opts|    
       opts.banner = "Usage: ruby_scope [options] path"
@@ -40,7 +41,15 @@ class RubyScope::CLI
         @recurse = true
       end
       
-      opts.on("--verbose", "Verbose output") do |name|
+      opts.on("--no-cache", "Do not use a cache") do
+        @cache_path = false
+      end
+      
+      opts.on("--cache PATH", "Use the cache at PATH (defaults to current dir)") do |path|
+        @cache_path = path if path
+      end
+      
+      opts.on("--verbose", "Verbose output") do
         @scanner.verbose = true
       end
       
@@ -49,7 +58,9 @@ class RubyScope::CLI
         exit
       end  
     end
-  
+    
+    @scanner.cache = RubyScope::SexpCache.new(@cache_path) if @cache_path
+    
     opts.parse!(args)
     @paths = args
     
@@ -65,6 +76,8 @@ class RubyScope::CLI
     @paths.each do |path|
       @scanner.scan path
     end
+    
+    @scanner.cache.save if @cache_path
   end
   
   protected
