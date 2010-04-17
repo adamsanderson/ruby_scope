@@ -1,4 +1,8 @@
 class RubyScope::CLI
+  attr_reader :paths
+  attr_reader :cache_path
+  attr_reader :scanner
+  
   def initialize(args)
     args = args.clone
     @scanner = RubyScope::Scanner.new

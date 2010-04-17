@@ -9,19 +9,29 @@ class RubyScope::Scanner
   
   def add_query(pattern)
     # Generate the pattern, we use a little instance_eval trickery here. 
-    sexp = SexpPath::SexpQueryBuilder.instance_eval(pattern)
+    sexp = case pattern
+      when String then SexpPath::SexpQueryBuilder.instance_eval(pattern)
+      when Sexp   then pattern
+      else raise ArgumentError, "Expected a String or Sexp"
+    end
+    
     if @query 
       @query = @query | sexp
     else
       @query = sexp
     end
     @query
+    
   rescue Exception=>ex
     puts "Invalid Pattern: '#{pattern}'"
     puts "Trace:"
     puts ex
     puts ex.backtrace
     exit 1    
+  end
+  
+  def query
+    @query.clone if @query
   end
   
   def scan(path)
@@ -31,7 +41,7 @@ class RubyScope::Scanner
       
       # Reset our cached code and split lines
       @code,@lines = nil,nil
-      
+            
       # Load the code and parse it with RubyParser
       # If we're caching pull from the cache, otherwise parse the code
       sexp = @cache[path] if @cache

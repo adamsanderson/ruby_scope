@@ -23,6 +23,7 @@ begin
     
     # Testing
     s.test_files = FileList["test/**/*_test.rb"]
+    s.add_development_dependency 'mocha', '>= 0.9.8'
   end
 
 rescue LoadError
@@ -36,7 +37,7 @@ end
 
 Rake::TestTask.new do |t|
   t.libs << 'lib'
-  t.pattern = 'test/**/*_test.rb'
+  t.test_files = FileList['test/**/*_test.rb']
   t.verbose = false
 end
 

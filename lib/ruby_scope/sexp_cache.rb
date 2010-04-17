@@ -28,15 +28,15 @@ class RubyScope::SexpCache
     end
   end
   
+  def cache_path
+    @cache_path ||= File.join(@root,'.ruby_scope.cache')
+  end
+  
   protected
   def with_cache
     DB.open(cache_path, 0666) do |cache|
       yield cache
     end
-  end
-  
-  def cache_path
-    @cache_path ||= File.join(@root,'.ruby_scope.cache')
   end
   
   def last_modified(path)
