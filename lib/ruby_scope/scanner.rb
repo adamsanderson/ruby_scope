@@ -29,14 +29,14 @@ class RubyScope::Scanner
     begin
       report_file path
       
-      # Load the code and parse it with RubyParser
-      @code = File.read(path)
-      @lines = nil
+      # Reset our cached code and split lines
+      @code,@lines = nil,nil
       
+      # Load the code and parse it with RubyParser
       # If we're caching pull from the cache, otherwise parse the code
       sexp = @cache[path] if @cache
       if !sexp
-        sexp = RubyParser.new.parse(@code, @path)
+        sexp = RubyParser.new.parse(code, @path)
         @cache[path] = sexp if @cache
       end
  
@@ -59,7 +59,7 @@ class RubyScope::Scanner
   def report_match(match)
     if !@lines
       puts @path unless @verbose
-      @lines = @code.split("\n")
+      @lines = code.split("\n")
     end
     line_number = match.sexp.line - 1
     puts "%4i: %s" % [match.sexp.line, @lines[line_number].strip]
@@ -69,6 +69,10 @@ class RubyScope::Scanner
     debug "Problem processing '#{@path}'"
     debug ex.message.strip
     debug ex.backtrace.map{|line| "  #{line}"}.join("\n")
+  end
+  
+  def code
+    @code ||= File.read(@path)
   end
   
   def debug(msg)
