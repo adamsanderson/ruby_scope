@@ -10,33 +10,43 @@ class RubyScope::CLI
       opts.separator ""
       opts.separator "Queries:"
 
-      opts.on("-d", "--def NAME", "Find the definition of instance method NAME") do |name|
+      opts.on("--def NAME", "Find the definition of instance method NAME") do |name|
         @scanner.add_query("s(:defn, :#{name}, _, _)")
       end
       
-      opts.on("-D", "--class-def NAME", "Find the definition of class method NAME") do |name|
+      opts.on("--class-def NAME", "Find the definition of class method NAME") do |name|
         @scanner.add_query("s(:defs, _, :#{name}, _, _)")
       end
       
-      opts.on("-c", "--call NAME", "Find method calls of NAME") do |name|
+      opts.on("--call NAME", "Find method calls of NAME") do |name|
         @scanner.add_query("s(:call, _, :#{name}, _)")
       end
       
-      opts.on("-C", "--class NAME", "Find definition of NAME") do |name|
+      opts.on("--class NAME", "Find definition of NAME") do |name|
         @scanner.add_query("s(:class, :#{name}, _, _)")
       end
       
-      opts.on("-v", "--variable NAME", "Find references to variable NAME") do |name|
+      opts.on("--variable NAME", "Find references to variable NAME") do |name|
         tag = instance_variable?(name) ? 'ivar' : 'lvar'
         @scanner.add_query("s(:#{tag}, :#{name})")
       end
       
       # Finds block arguments, variable assignments, method arguments (in that order)
-      opts.on("-a", "--assign NAME", "Find assignments to NAME") do |name|
+      opts.on("--assign NAME", "Find assignments to NAME") do |name|
         tag = instance_variable?(name) ? 'iasgn' : 'lasgn'
         @scanner.add_query("s(:#{tag}, :#{name}) | s(:#{tag}, :#{name}, _) | (t(:args) & SexpPath::Matcher::Block.new{|s| s[1..-1].any?{|a| a == :#{name}}} )")        
       end
       
+      opts.on("--any NAME", "Find any reference to NAME (class, variable, number)") do |name|
+        @scanner.add_query("include(:#{name})")
+      end
+      
+      opts.on("--custom SEXP_PATH", "Searches for a custom SexpPath") do |sexp|
+        @scanner.add_query(sexp)
+      end
+      
+      opts.separator ""
+      opts.separator "Options:"
       opts.on("-R", "Recursively search folders") do
         @recurse = true
       end
@@ -49,7 +59,7 @@ class RubyScope::CLI
         @cache_path = path if path
       end
       
-      opts.on("--verbose", "Verbose output") do
+      opts.on("-v", "--verbose", "Verbose output") do
         @scanner.verbose = true
       end
       
