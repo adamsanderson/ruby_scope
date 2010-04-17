@@ -5,43 +5,43 @@ class RubyScope::CLI
     @cache_path = FileUtils.pwd
     
     opts = OptionParser.new do |opts|    
-      opts.banner = "Usage: ruby_scope [options] path"
+      opts.banner = "Usage: ruby_scope [options] queries path"
 
       opts.separator ""
       opts.separator "Queries:"
 
       opts.on("--def NAME", "Find the definition of instance method NAME") do |name|
-        @scanner.add_query("s(:defn, :#{name}, _, _)")
+        @scanner.add_query("s(:defn, #{v name}, _, _)")
       end
       
       opts.on("--class-def NAME", "Find the definition of class method NAME") do |name|
-        @scanner.add_query("s(:defs, _, :#{name}, _, _)")
+        @scanner.add_query("s(:defs, _, #{v name}, _, _)")
       end
       
       opts.on("--call NAME", "Find method calls of NAME") do |name|
-        @scanner.add_query("s(:call, _, :#{name}, _)")
+        @scanner.add_query("s(:call, _, #{v name}, _)")
       end
       
       opts.on("--class NAME", "Find definition of NAME") do |name|
-        @scanner.add_query("s(:class, :#{name}, _, _)")
+        @scanner.add_query("s(:class, #{v name}, _, _)")
       end
       
       opts.on("--variable NAME", "Find references to variable NAME") do |name|
         tag = instance_variable?(name) ? 'ivar' : 'lvar'
-        @scanner.add_query("s(:#{tag}, :#{name})")
+        @scanner.add_query("s(:#{tag}, #{v name})")
       end
       
       # Finds block arguments, variable assignments, method arguments (in that order)
       opts.on("--assign NAME", "Find assignments to NAME") do |name|
         tag = instance_variable?(name) ? 'iasgn' : 'lasgn'
-        @scanner.add_query("s(:#{tag}, :#{name}) | s(:#{tag}, :#{name}, _) | (t(:args) & SexpPath::Matcher::Block.new{|s| s[1..-1].any?{|a| a == :#{name}}} )")        
+        @scanner.add_query("s(:#{tag}, #{v name}) | s(:#{tag}, #{v name}, _) | (t(:args) & SexpPath::Matcher::Block.new{|s| s[1..-1].any?{|a| a == #{v name}}} )")        
       end
       
       opts.on("--any NAME", "Find any reference to NAME (class, variable, number)") do |name|
-        @scanner.add_query("include(:#{name})")
+        @scanner.add_query("include(#{v name})")
       end
       
-      opts.on("--custom SEXP_PATH", "Searches for a custom SexpPath") do |sexp|
+      opts.on("--custom SEXP_PATH", "Search for a custom SexpPath") do |sexp|
         @scanner.add_query(sexp)
       end
       
@@ -55,7 +55,7 @@ class RubyScope::CLI
         @cache_path = nil
       end
       
-      opts.on("--cache PATH", "Use the cache at PATH (defaults to current dir)") do |path|
+      opts.on("--cache PATH", "Use the cache at PATH (defaults to current dir)", "Beware, the cache can get rather large") do |path|
         @cache_path = path if path
       end
       
@@ -90,6 +90,18 @@ class RubyScope::CLI
   protected
   def expand_paths(paths)
     paths.inject([]){|p,v| File.directory?(v) ? p.concat(Dir[File.join(v,'**/*.rb')]) : p << v; p }
+  end
+  
+  # Inserts the appropriate type of value given name.
+  # For instance:
+  #   v('/cake/') #=> /cake/ # regular expression match
+  #   v('apple')  #=> :apple # atom match
+  def v(name)
+    if name =~ /^\/.+\/$/ # regular expression matching regular expression... WIN!
+      "m(#{name})"
+    else
+      ":#{name}"
+    end
   end
   
   def instance_variable?(name)

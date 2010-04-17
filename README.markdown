@@ -1,6 +1,6 @@
 RubyScope
 ---------
-Syntactically search your code.
+Ruby colored binoculars for your code.
 
     Usage: ruby_scope [options] path
 
@@ -28,6 +28,10 @@ Find all the places `run` or `save` are called in your secret project:
 Where do I assign values to `a`:
     
     ruby_scope -R --assign 'a' ~/SecretProject
+    
+Of course regular expressions are fair game:
+
+    ruby_scope -R --def '/^test/' ~/SecretProject
     
 Wicked hacker? Go crazy and write your own SexpPath queries:
 
