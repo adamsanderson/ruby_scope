@@ -2,6 +2,10 @@ RubyScope
 ---------
 Ruby colored binoculars for your code.
 
+Using RubyScope
+===============
+You can invoke ruby_scope from the command line:
+
     Usage: ruby_scope [options] path
 
     Queries:
@@ -38,8 +42,19 @@ Wicked hacker? Go crazy and write your own SexpPath queries:
     ruby_scope --custom 's(:call, s(:ivar, atom), :save, _)'
 
 That finds all the saves on instance variables by the way.
-    
-Depends on RubyParser, SexpProcessor, and SexpPath, no gem yet.
+
+Hacking RubyScope
+=================
+Want to extend ruby_scope?  Take a look at `cli.rb`, at the 
+moment this is where all of the queries are actually generated.  Have an
+idea for a better caching mechanism? Look at `sexp_cache.rb`.
+
+The source is on GitHub, so fork off:
+
+    http://github.com/adamsanderson/ruby_scope
+
+Enjoy,    
 
     Adam Sanderson
+    http://endofline.wordpress.com/
     netghost@gmail.com
