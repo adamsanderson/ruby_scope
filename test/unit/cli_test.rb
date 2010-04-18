@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/test_helper'
+require 'test/test_helper'
 
 class CLITest < Test::Unit::TestCase  
   def test_configuring_scanner

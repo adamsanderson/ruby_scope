@@ -36,9 +36,17 @@ Rake::RDocTask.new do |t|
 end
 
 Rake::TestTask.new do |t|
-  t.libs << 'lib'
   t.test_files = FileList['test/**/*_test.rb']
   t.verbose = false
+end
+
+namespace :test do 
+  ['unit', 'integration'].each do |type|  
+    Rake::TestTask.new(type) do |t|
+      t.test_files = FileList["test/#{type}/**/*_test.rb"]
+      t.verbose = false
+    end
+  end
 end
 
 task :default => :test

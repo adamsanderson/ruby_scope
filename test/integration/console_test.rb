@@ -1,10 +1,10 @@
-require File.dirname(__FILE__) + '/test_helper'
+require 'test/test_helper'
 
 # Self referential testing! 
 # These are awesome, absurd, and abusive. 
 # Make sure that the app actually does what we say it does.
 class ConsoleTest < Test::Unit::TestCase
-  ROOT = File.dirname(__FILE__) + '/../'
+  ROOT = File.dirname(__FILE__) + '/../../'
   
   def test_finding_this_test
     res = rs "--def '/^test/'"
