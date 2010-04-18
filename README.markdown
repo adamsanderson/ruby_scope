@@ -40,7 +40,7 @@ You can invoke ruby_scope from the command line:
         
 Find all the places `run` or `save` are called in your secret project:
 
-    ruby_scope -R --method 'run' --method 'save' ~/SecretProject
+    ruby_scope -R --def 'run' --def 'save' ~/SecretProject
     
 Where do I assign values to `a`:
     
