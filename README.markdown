@@ -2,6 +2,19 @@ RubyScope
 ---------
 Ruby colored binoculars for your code.
 
+Installation
+============
+RubyScope is available as a normal gem:
+
+    gem install ruby_scope
+    
+Alternatively, you can get the source from GitHub:
+
+    git clone git://github.com/adamsanderson/ruby_scope.git
+    
+If you pull the source, install with `rake install`.  See below for more 
+information on hacking around in the source.
+
 Using RubyScope
 ===============
 You can invoke ruby_scope from the command line:
